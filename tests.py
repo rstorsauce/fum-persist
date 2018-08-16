@@ -54,7 +54,7 @@ class TestUUID(unittest.TestCase):
 
 class TestFumYieldSuccess(unittest.TestCase):
     def test_no_blocking_when_no_port(self):
-        res = fum_yield__(False, 0, None, '0', '', 0)
+        res = fum_yield__(False, None, '', 0)
         self.assertTrue(0 == res)
 
     def test_yield_responds_with_ok_when_ready(self):

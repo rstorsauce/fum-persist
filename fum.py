@@ -70,10 +70,11 @@ def fum_node_waits__(sock):
     finally:
         connection.close()
 
-def fum_yield__(has_setup, node_port, socket, node_name, resp_host, resp_port):
+def fum_yield__(has_setup, socket, resp_host, resp_port):
     if resp_port:
+        if has_setup:
+            fum_node_waits__(socket)
         fum_node_yields__(resp_host, resp_port)
-        fum_node_waits__(socket)
     else:
         eprint("persistent mode not detected, running singly")
     return 0
