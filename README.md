@@ -23,4 +23,4 @@ persistence protocol:
 
 # fum.py
 
-provides function `fum\_yield()` which waits for the 
+provides function `fum_yield()` which must be put inside a while loop containing the execution code, not including the setup code.
