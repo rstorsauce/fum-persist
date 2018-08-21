@@ -20,15 +20,16 @@ def build_socket(port):
     sock.listen(1)
     return sock
 
-def send_uuid(port):
+def send_data(port, data, resp_size):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ('localhost', port)
     sock.connect(server_address)
-    rand_uuid = str(uuid.uuid4())
-    sock.sendall(rand_uuid.encode())
-    data = sock.recv(2)
+    sock.sendall(data.encode())
+    if resp_size:
+        resp_data = sock.recv(resp_size)
+        sock.close()
+        return resp_data
     sock.close()
-    return data, rand_uuid
 
 def socket_listener(host_port, numbytes):
     sock = build_socket(host_port)
@@ -52,31 +53,100 @@ class TestUUID(unittest.TestCase):
         #reject when hyphen is wrong.
         self.assertFalse(is_uuid("7587bce7a7c5c-49c9-94d0-cdb20fcbe5e"))
 
-class TestFumYieldSuccess(unittest.TestCase):
+class TestEmptyFum(unittest.TestCase):
+
+    class EmptyFum:
+        node_port = 0
+        def eprint(*args):
+            pass
+
     def test_no_blocking_when_no_port(self):
-        res = fum_yield__(False, None, '', 0)
+        res = fum_yield__(TestEmptyFum.EmptyFum)
         self.assertTrue(0 == res)
 
+
+class TestFumYield(unittest.TestCase):
+
+    class FumForYieldTest:
+        host_port = 0
+        host_ip = 'localhost'
+        exited = False
+        def eprint(*args):
+            pass
+        def exit(_):
+            TestFumYield.FumForYieldTest.exited = True
+
     def test_yield_responds_with_ok_when_ready(self):
-        resp_port = randint(11000, 11999)
+        host_port = randint(11000, 11999)
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            server_future = executor.submit(socket_listener, resp_port, 2)
+            server_future = executor.submit(socket_listener, host_port, 2)
+            TestFumYield.FumForYieldTest.host_port = host_port
             time.sleep(0.01)
-            fyr = fum_node_yields__('localhost', resp_port)
-            self.assertTrue(0 == fyr)
+            res = fum_node_yields__(TestFumYield.FumForYieldTest)
+            self.assertTrue(0 == res)
             self.assertTrue(b'ok' == server_future.result())
 
-    def test_wait_responds_with_ok_when_delivered(self):
+    def test_connection_failure_bails_out(self):
+        # create a port destination that doesn't actually have a port created
+        # behind it.  This should yield a TCP/IP connection error.
+        host_port = randint(11000, 11999)
+        TestFumYield.FumForYieldTest.host_port = host_port
+        fum_node_yields__(TestFumYield.FumForYieldTest)
+        self.assertTrue(TestFumYield.FumForYieldTest.exited)
+
+class TestFumWait(unittest.TestCase):
+
+    class FumForWaitTest:
+        exitval = -1
+        def eprint(*args):
+            pass
+        def exit(val):
+            TestFumWait.FumForWaitTest.exitval = val
+
+    def test_wait_responds_with_ok_when_delivered_uuid(self):
         node_port = randint(12000, 12999)
-        sock = build_socket(node_port)
+        TestFumWait.FumForWaitTest.sock = build_socket(node_port)
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            node_future = executor.submit(fum_node_waits__, sock)
+            node_future = executor.submit(fum_node_waits__, TestFumWait.FumForWaitTest)
             time.sleep(0.01)
-            host_res, rand_uuid = send_uuid(node_port)
+            rand_uuid = str(uuid.uuid4())
+            host_res = send_data(node_port, rand_uuid, 2)
             self.assertTrue(b'ok' == host_res)
             self.assertTrue(rand_uuid == node_future.result())
-        sock.close()
+        TestFumWait.FumForWaitTest.sock.close()
 
+    def test_wait_responds_with_done_when_sent_done(self):
+        node_port = randint(12000, 12999)
+        TestFumWait.FumForWaitTest.sock = build_socket(node_port)
+        TestFumWait.FumForWaitTest.exitval = -1
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            node_future = executor.submit(fum_node_waits__, TestFumWait.FumForWaitTest)
+            time.sleep(0.01)
+            host_res = send_data(node_port, 'done', 4)
+            self.assertTrue(b'done' == host_res)
+            self.assertTrue(0 == TestFumWait.FumForWaitTest.exitval)
+        TestFumWait.FumForWaitTest.sock.close()
+
+    def test_wait_bails_when_sent_strange_data(self):
+        node_port = randint(12000, 12999)
+        TestFumWait.FumForWaitTest.sock = build_socket(node_port)
+        TestFumWait.FumForWaitTest.exitval = -1
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            node_future = executor.submit(fum_node_waits__, TestFumWait.FumForWaitTest)
+            time.sleep(0.01)
+            host_res = send_data(node_port, 'XXXX', 0)
+            time.sleep(0.01)
+            self.assertTrue(1 == TestFumWait.FumForWaitTest.exitval)
+        TestFumWait.FumForWaitTest.sock.close()
+
+    def test_wait_bails_on_communication_error(self):
+        node_port = randint(12000, 12999)
+        #don't build the port.
+        TestFumWait.FumForWaitTest.exitval = -1
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            node_future = executor.submit(fum_node_waits__, TestFumWait.FumForWaitTest)
+            time.sleep(0.01)
+            self.assertTrue(1 == TestFumWait.FumForWaitTest.exitval)
 
 if __name__ == '__main__':
     unittest.main()
