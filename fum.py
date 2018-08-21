@@ -15,7 +15,7 @@ class Fum:
         Fum.node_ip = os.getenv('FUM_NODE_IP', '')
         # parameters for the host.
         Fum.host_ip = os.getenv('FUM_HOST_IP', '')
-        Fum.host_port = int(os.getenv('FUM_PORT', 0))
+        Fum.host_port = int(os.getenv('FUM_HOST_PORT', 0))
         # run-specific parameters
         Fum.current_uuid = ""
         # build an actual socket that we'll save, but only
@@ -29,16 +29,14 @@ class Fum:
             except:
                 Fum.eprint('failed to create socket for yield on port: ' + str(Fum.node_port))
                 exit(1)
-        # general parameters
-        Fum.log = sys.stderr #open("/tmp/fumlog.txt", "a")
 
     #lets us mock exiting the tensorflow program, for tests.
     def exit(val):
         exit(val)
 
     def eprint(*args):
-        print(*args, file=Fum.log)
-        Fum.log.flush()
+        print(*args, file=sys.stderr)
+        sys.stderr.flush()
 
 def is_uuid(uuid):
     if len(uuid) != 36:
@@ -62,6 +60,7 @@ def fum_node_yields__(fclass):
         resp_sock.connect(server_address)
         resp_sock.sendall('ok'.encode())
         resp_sock.close()
+        fclass.has_setup = True
         return 0
     except:
         if resp_sock:
@@ -104,7 +103,7 @@ def fum_yield__(fclass):
     if fclass.node_port:
         if fclass.has_setup:
             fum_node_waits__(fclass)
-        fum_node_yields__(fclass)
+        return fum_node_yields__(fclass)
     else:
         fclass.eprint("persistent mode not detected, running singly")
     return 0

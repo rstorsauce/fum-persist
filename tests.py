@@ -78,11 +78,13 @@ class TestFumYield(unittest.TestCase):
 
     def test_yield_responds_with_ok_when_ready(self):
         host_port = randint(11000, 11999)
+        TestFumYield.FumForYieldTest.has_setup = False
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             server_future = executor.submit(socket_listener, host_port, 2)
             TestFumYield.FumForYieldTest.host_port = host_port
             time.sleep(0.01)
             res = fum_node_yields__(TestFumYield.FumForYieldTest)
+            self.assertTrue(TestFumYield.FumForYieldTest.has_setup)
             self.assertTrue(0 == res)
             self.assertTrue(b'ok' == server_future.result())
 
