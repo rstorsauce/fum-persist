@@ -57,12 +57,14 @@ class TestEmptyFum(unittest.TestCase):
 
     class EmptyFum:
         node_port = 0
+        has_run = False
         def eprint(*args):
             pass
 
     def test_no_blocking_when_no_port(self):
         res = fum_yield__(TestEmptyFum.EmptyFum)
         self.assertTrue(0 == res)
+        self.assertTrue(TestEmptyFum.EmptyFum.has_run)
 
 
 class TestFumYield(unittest.TestCase):
@@ -84,7 +86,6 @@ class TestFumYield(unittest.TestCase):
             TestFumYield.FumForYieldTest.host_port = host_port
             time.sleep(0.01)
             res = fum_node_yields__(TestFumYield.FumForYieldTest)
-            self.assertTrue(TestFumYield.FumForYieldTest.has_setup)
             self.assertTrue(0 == res)
             self.assertTrue(b'ok' == server_future.result())
 

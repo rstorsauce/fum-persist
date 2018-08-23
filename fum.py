@@ -8,7 +8,7 @@ import time
 class Fum:
     #globals
     def setup():
-        Fum.has_setup = False
+        Fum.has_run = False
         # parameters for the node.
         Fum.node_port = int(os.getenv('FUM_NODE_PORT', 0))
         Fum.node_id = os.getenv('FUM_NODE_ID', '')
@@ -60,7 +60,7 @@ def fum_node_yields__(fclass):
         resp_sock.connect(server_address)
         resp_sock.sendall('ok'.encode())
         resp_sock.close()
-        fclass.has_setup = True
+        fclass.has_run = True
         return 0
     except:
         if resp_sock:
@@ -104,12 +104,12 @@ def fum_yield__(fclass):
         fum_node_yields__(fclass)
         fum_node_waits__(fclass)
     else:
-        if fclass.has_setup:
+        if fclass.has_run:
             fclass.eprint("single run has been completed.")
             fclass.exit(0)
         else:
             fclass.eprint("persistent mode not detected, running singly")
-            fclass.has_setup = True
+            fclass.has_run = True
     return 0
 
 def fum_yield():
