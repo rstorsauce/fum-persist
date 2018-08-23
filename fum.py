@@ -101,9 +101,8 @@ def fum_node_waits__(fclass):
 
 def fum_yield__(fclass):
     if fclass.node_port:
-        if fclass.has_setup:
-            fum_node_waits__(fclass)
-        return fum_node_yields__(fclass)
+        fum_node_yields__(fclass)
+        fum_node_waits__(fclass)
     else:
         if fclass.has_setup:
             fclass.eprint("single run has been completed.")
