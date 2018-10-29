@@ -116,5 +116,3 @@ def fum_yield__(fclass):
 def fum_yield():
     return fum_yield__(Fum)
 
-#trigger the setup run to make sure all of our stateful stuff is going on.
-Fum.setup()
