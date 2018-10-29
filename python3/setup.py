@@ -16,7 +16,7 @@ setup(
     license='MIT',
     author='RStor, Inc.',
     author_email='isaac@rstor.io',
-    packages=find_packages(exclude=['docs*', 'tests*', 'examples*']),
+    packages=find_packages(),
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Console',
