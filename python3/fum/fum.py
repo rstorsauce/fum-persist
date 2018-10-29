@@ -45,7 +45,7 @@ class Fum:
         print(*args, file=sys.stderr)
         sys.stderr.flush()
 
-def is_uuid(uuid):
+def is_uuid(uuid_string):
     try:
         val = UUID(uuid_string, version=4)
         return True
