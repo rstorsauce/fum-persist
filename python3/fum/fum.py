@@ -40,7 +40,7 @@ class Fum:
         exit(val)
 
     def info(*args):
-        Fum.logger.info()
+        Fum.logger.info(*args)
         print(*args, file=sys.stderr)
         sys.stderr.flush()
 
