@@ -2,8 +2,9 @@ import socket
 import sys
 import os
 import time
-import uuid
 import logging
+
+from uuid import UUID
 
 # this is a convenient way to namespace key global variables outside of the main
 # python namespace.  It's also mock-able so that we can run tests against fake Fums.
