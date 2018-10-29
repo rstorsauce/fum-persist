@@ -96,7 +96,7 @@ def fum_node_waits__(fclass):
     except Exception as e:
         # just leave everything open since we're going to bail and the vm is
         # going to be reset anyways.
-        fclass.info('error thrown: {}'.format(str(e))
+        fclass.info('error thrown: ', str(e))
         fclass.exit(1)
     finally:
         connection.close()
