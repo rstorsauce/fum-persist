@@ -32,7 +32,7 @@ class Fum:
                 Fum.sock.bind(server_address)
                 Fum.sock.listen(1)
             except:
-                Fum.eprint('failed to create socket for yield on port: ' + str(Fum.node_port))
+                Fum.info('failed to create socket for yield on port: ' + str(Fum.node_port))
                 exit(1)
 
     #lets us mock exiting the tensorflow program, for tests.
@@ -52,7 +52,7 @@ def is_uuid(uuid):
         return False
 
 def fum_node_yields__(fclass):
-    fclass.eprint('signalling ok to', fclass.host_ip, 'at', fclass.host_port)
+    fclass.info('signalling ok to', fclass.host_ip, 'at', fclass.host_port)
     resp_sock = 0
     try:
         #transiently create an output socket.
@@ -67,11 +67,11 @@ def fum_node_yields__(fclass):
         if resp_sock:
             resp_sock.close()
         #keep pinging the socket until we get a response.
-        fclass.eprint('failed to send ok signal, going to bail.')
+        fclass.info('failed to send ok signal, going to bail.')
         fclass.exit(1)
 
 def fum_node_waits__(fclass):
-    fclass.eprint("waiting for job signal...")
+    fclass.info("waiting for job signal...")
     connection = False
     try:
         connection, client_address = fclass.sock.accept()
@@ -79,17 +79,17 @@ def fum_node_waits__(fclass):
         data = connection.recv(36).decode("utf-8")
         if is_uuid(data):
             connection.sendall('ok'.encode())
-            fclass.eprint("triggering job", data)
+            fclass.info("triggering job", data)
             fclass.current_uuid = data
             return data
         elif data == "done":
             connection.sendall('done'.encode())
-            fclass.eprint("terminate signal received")
+            fclass.info("terminate signal received")
             connection.close()
             fclass.sock.close()
             fclass.exit(0)
         else:
-            fclass.eprint("strange data recieved")
+            fclass.info("strange data recieved")
             connection.close()
             fclass.sock.close()
             fclass.exit(1)
@@ -106,10 +106,10 @@ def fum_yield__(fclass):
         fum_node_waits__(fclass)
     else:
         if fclass.has_run:
-            fclass.eprint("single run has been completed.")
+            fclass.info("single run has been completed.")
             fclass.exit(0)
         else:
-            fclass.eprint("persistent mode not detected, running singly")
+            fclass.info("persistent mode not detected, running singly")
             fclass.has_run = True
     return 0
 
