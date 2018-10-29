@@ -1,5 +1,5 @@
-from fum import fum_yield
-from fum import Fum
+from fum.fum import fum_yield
+from fum.fum import Fum
 
 __version__ = '0.0.1'
 
