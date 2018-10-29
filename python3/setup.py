@@ -16,6 +16,9 @@ setup(
     license='MIT',
     author='RStor, Inc.',
     author_email='isaac@rstor.io',
+    install_requires=[
+        'uuid',
+    ],
     packages=find_packages(),
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
