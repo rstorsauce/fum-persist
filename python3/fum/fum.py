@@ -2,7 +2,7 @@ import socket
 import sys
 import os
 import time
-import UUID
+import uuid
 import logging
 
 # this is a convenient way to namespace key global variables outside of the main
