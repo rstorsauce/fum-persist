@@ -19,7 +19,7 @@ class Fum:
         Fum.host_ip = os.getenv('FUM_HOST_IP', '')
         Fum.host_port = int(os.getenv('FUM_HOST_PORT', 0))
         # run-specific parameters
-        Fum.current_uuid = ""
+        Fum.current_uuid = ''
         #set up a global logger object
         Fum.logger = logging.getLogger(__name__)
 
@@ -71,31 +71,32 @@ def fum_node_yields__(fclass):
         fclass.exit(1)
 
 def fum_node_waits__(fclass):
-    fclass.info("waiting for job signal...")
+    fclass.info('waiting for job signal...')
     connection = False
     try:
         connection, client_address = fclass.sock.accept()
         #a uuid should be 36 bytes of data.
-        data = connection.recv(36).decode("utf-8")
+        data = connection.recv(36).decode('utf-8')
         if is_uuid(data):
             connection.sendall('ok'.encode())
-            fclass.info("triggering job", data)
+            fclass.info('triggering job', data)
             fclass.current_uuid = data
             return data
-        elif data == "done":
+        elif data == 'done':
             connection.sendall('done'.encode())
-            fclass.info("terminate signal received")
+            fclass.info('terminate signal received')
             connection.close()
             fclass.sock.close()
             fclass.exit(0)
         else:
-            fclass.info("strange data recieved")
+            fclass.info('strange data recieved')
             connection.close()
             fclass.sock.close()
             fclass.exit(1)
-    except:
+    except Exception as e:
         # just leave everything open since we're going to bail and the vm is
         # going to be reset anyways.
+        fclass.info('error thrown: {}'.format(str(e))
         fclass.exit(1)
     finally:
         connection.close()
@@ -106,10 +107,10 @@ def fum_yield__(fclass):
         fum_node_waits__(fclass)
     else:
         if fclass.has_run:
-            fclass.info("single run has been completed.")
+            fclass.info('single run has been completed.')
             fclass.exit(0)
         else:
-            fclass.info("persistent mode not detected, running singly")
+            fclass.info('persistent mode not detected, running singly')
             fclass.has_run = True
     return 0
 
