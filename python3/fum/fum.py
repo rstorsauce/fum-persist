@@ -2,6 +2,8 @@ import socket
 import sys
 import os
 import time
+import UUID
+import logging
 
 # this is a convenient way to namespace key global variables outside of the main
 # python namespace.  It's also mock-able so that we can run tests against fake Fums.
@@ -18,6 +20,9 @@ class Fum:
         Fum.host_port = int(os.getenv('FUM_HOST_PORT', 0))
         # run-specific parameters
         Fum.current_uuid = ""
+        #set up a global logger object
+        Fum.logger = logging.getLogger(__name__)
+
         # build an actual socket that we'll save, but only
         # if node_port is a number.
         if Fum.node_port:
@@ -34,21 +39,17 @@ class Fum:
     def exit(val):
         exit(val)
 
-    def eprint(*args):
+    def info(*args):
+        Fum.logger.()
         print(*args, file=sys.stderr)
         sys.stderr.flush()
 
 def is_uuid(uuid):
-    if len(uuid) != 36:
+    try:
+        val = UUID(uuid_string, version=4)
+        return True
+    except ValueError:
         return False
-    for idx in range(len(uuid)):
-        if idx in [8, 13, 18, 23]:
-            if uuid[idx] != '-':
-                return False
-        else:
-            if not (uuid[idx] in '0123456789abcdef'):
-                return False
-    return True
 
 def fum_node_yields__(fclass):
     fclass.eprint('signalling ok to', fclass.host_ip, 'at', fclass.host_port)
