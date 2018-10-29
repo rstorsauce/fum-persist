@@ -41,7 +41,7 @@ class Fum:
 
     def info(*args):
         Fum.logger.info()
-        print(*args, file=sys.stderr)
+        print(file=sys.stderr, *args)
         sys.stderr.flush()
 
 def is_uuid(uuid):
